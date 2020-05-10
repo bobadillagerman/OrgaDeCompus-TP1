@@ -83,48 +83,68 @@ int main(int argc, char *argv[]) {
 
 	
 
-        int caracterAnterior, caracter, numero, lineaConError;
+        int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt;
 	long inicio;
 	size_t cantDePalabras;
 
         //Leo linea por linea
         while (fgetc(inputFile)!=EOF){
-            //El primer fgetc solo es para ver si no llegue al final del archivo
-            //fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
-            fseek(inputFile,-1,SEEK_CUR);
+		//El primer fgetc solo es para ver si no llegue al final del archivo
+		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
+		fseek(inputFile,-1,SEEK_CUR);
 
-            //Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
-            //La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
-            //La 2da vez va a ser para guardar los datos en el vector de enteros
-            inicio=ftell(inputFile);
+		//Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
+		//La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
+		//La 2da vez va a ser para guardar los datos en el vector de enteros
+		inicio=ftell(inputFile);
 
-            lineaConError=0;
-            cantDePalabras = 0;
-            caracterAnterior = ' ';
+		lineaConError=0;
+ 		cantDePalabras = 0;
+		caracterAnterior = ' ';
+		caracterAntAnt = ' ';
 
-            while((caracter=fgetc(inputFile))!='\n' && caracter!=EOF){
-                //Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57) y los espacios
-                if ((caracter<48 || caracter>57) && caracter!=' ')
-                    lineaConError=1;
-                if ((caracterAnterior==' ') && (caracter!=' '))
-                    cantDePalabras++;
-                caracterAnterior = caracter;
-            }
+ 		while((caracter=fgetc(inputFile))!='\n' && caracter!=EOF){
+			//Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57), los espacios y los signos + y - en cierto orden
+			if (!(caracter>47 && caracter<58) && caracter!=' ' && !((caracter=='+' || caracter=='-') && caracterAnterior==' ') || (caracter==' ' && (caracterAnterior=='+' || caracterAnterior=='-') && caracterAntAnt==' '))
+				lineaConError=1;
 
-            if ((lineaConError==0) && (cantDePalabras>0)){
-                fseek(inputFile,inicio,SEEK_SET);
-                int* vector = (int*) malloc(cantDePalabras*sizeof(int));
-                for (int i=0;i<cantDePalabras;i++){
-                    fscanf(inputFile,"%d",&numero);
-                    vector[i] = numero;
-                }
+			if ((caracterAnterior==' ') && (caracter!=' '))
+				cantDePalabras++;
 
-		//merge_sort(vector, cantDePalabras);
+			caracterAntAnt = caracterAnterior;
+			caracterAnterior = caracter;
+		}
 
-		//imprimir vector
+		//Un caso extra que no pude considerar en el while (cuando el ultimo caracter de la linea es un signo)
+		if (caracterAnterior=='+' || caracterAnterior=='-')
+			lineaConError=1;
 
-		free(vector);
-            }
+		if ((lineaConError==0) && (cantDePalabras>0)){
+			fseek(inputFile,inicio,SEEK_SET);
+			int* vector = (int*) malloc(cantDePalabras*sizeof(int));
+			for (int i=0;i<cantDePalabras;i++){
+				fscanf(inputFile,"%d",&numero);
+				vector[i] = numero;
+ 			}
+
+			//merge_sort(vector, cantDePalabras);
+
+			//Imprimir vector
+			for (int i=0;i<cantDePalabras;i++)
+				fprintf(outputFile, "%d ", vector[i]);
+			fprintf(outputFile, "\n");
+			free(vector);
+		}
+
+		if (lineaConError==1){
+			//El error lo emito por salida estandar. Preguntar si esta bien que tambien figure en el archivo de salida
+			fprintf(outputFile, "Error fgetc: Linea con caracter invalido \n");
+			fprintf(stderr, "Error fgetc: Linea con caracter invalido \n");
+			//return ERROR;
+			//Por ahora, ante un error el programa continua con las lineas siguiente. Preguntar si esta bien.
+		}
+		//Por ahora las lineas vacias (o solo con espacios en blanco) no las considero error,
+		//el programa continua normalmente, preguntar si esta bien
         }
 
 
