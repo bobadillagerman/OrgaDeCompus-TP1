@@ -81,11 +81,51 @@ int main(int argc, char *argv[]) {
 
 
 
-	/*size_t dimension;
-	int dato;
-	while(fscanf(inputFile,"%d",&dato)!=EOF){
-		while(fscanf(inputFile,"%d",&dato)!=EOF)
-	}*/
+	
+
+        int caracterAnterior, caracter, numero, lineaConError;
+	long inicio;
+	size_t cantDePalabras;
+
+        //Leo linea por linea
+        while (fgetc(inputFile)!=EOF){
+            //El primer fgetc solo es para ver si no llegue al final del archivo
+            //fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
+            fseek(inputFile,-1,SEEK_CUR);
+
+            //Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
+            //La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
+            //La 2da vez va a ser para guardar los datos en el vector de enteros
+            inicio=ftell(inputFile);
+
+            lineaConError=0;
+            cantDePalabras = 0;
+            caracterAnterior = ' ';
+
+            while((caracter=fgetc(inputFile))!='\n' && caracter!=EOF){
+                //Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57) y los espacios
+                if ((caracter<48 || caracter>57) && caracter!=' ')
+                    lineaConError=1;
+                if ((caracterAnterior==' ') && (caracter!=' '))
+                    cantDePalabras++;
+                caracterAnterior = caracter;
+            }
+
+            if ((lineaConError==0) && (cantDePalabras>0)){
+                fseek(inputFile,inicio,SEEK_SET);
+                int* vector = (int*) malloc(cantDePalabras*sizeof(int));
+                for (int i=0;i<cantDePalabras;i++){
+                    fscanf(inputFile,"%d",&numero);
+                    vector[i] = numero;
+                }
+
+		//merge_sort(vector, cantDePalabras);
+
+		//imprimir vector
+
+		free(vector);
+            }
+        }
 
 
 
