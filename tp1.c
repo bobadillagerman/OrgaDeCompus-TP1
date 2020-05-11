@@ -18,7 +18,8 @@ int main(int argc, char *argv[]) {
 		{"output",  required_argument, NULL, 'o'},
 		{NULL, 0,                      NULL, 0}
 	};
-	FILE *inputFile = NULL;
+	FILE *inputFileOriginal = NULL;
+	FILE *inputFile = tmpfile();
 	FILE *outputFile = NULL;
 
 	while ((option = getopt_long(argc, argv, short_opt, long_opt, NULL)) != -1) {
@@ -44,8 +45,8 @@ int main(int argc, char *argv[]) {
 				return SALIDA_EXITOSA;
 			case 'i':
 				if(strcmp(optarg, "-") != 0){
-					inputFile = fopen(optarg, "r");
-					if(inputFile == NULL) {
+					inputFileOriginal = fopen(optarg, "r");
+					if(inputFileOriginal == NULL) {
 						fprintf(stderr, "Error archivo entrada: %s\n", strerror(errno));
 						return ERROR;
 					}
@@ -71,15 +72,20 @@ int main(int argc, char *argv[]) {
 		return ERROR;
 	}
 
-	if(inputFile == NULL) {
-		inputFile = stdin;
+	if(inputFileOriginal == NULL) {
+		inputFileOriginal = stdin;
 	}
 
 	if(outputFile == NULL) {
 		outputFile = stdout;
 	}
 
-
+	//Corregido bug de entrada estandar por tuberia
+	int data;
+	while ((data=fgetc(inputFileOriginal)) != EOF ) {
+		fputc(data,inputFile );
+	}
+	rewind(inputFile);
 
 	
 
