@@ -1,1 +1,1 @@
-# OrgaDeCompus-TP1
+# Organización de Computadoras - TP1

@@ -90,7 +90,7 @@ int main(int argc, char *argv[]) {
 	
 
         int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt;
-	long inicio;
+	long inicio, backup;
 	size_t cantDePalabras;
 
         //Leo linea por linea
@@ -126,6 +126,7 @@ int main(int argc, char *argv[]) {
 			lineaConError=1;
 
 		if ((lineaConError==0) && (cantDePalabras>0)){
+			backup=ftell(inputFile);
 			fseek(inputFile,inicio,SEEK_SET);
 			int* vector = (int*) malloc(cantDePalabras*sizeof(int));
 			for (int i=0;i<cantDePalabras;i++){
@@ -140,6 +141,7 @@ int main(int argc, char *argv[]) {
 				fprintf(outputFile, "%d ", vector[i]);
 			fprintf(outputFile, "\n");
 			free(vector);
+			fseek(inputFile,backup,SEEK_SET);
 		}
 
 		if (lineaConError==1){
