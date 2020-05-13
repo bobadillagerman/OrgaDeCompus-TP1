@@ -89,12 +89,12 @@ int main(int argc, char *argv[]) {
 
 	
 
-        int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt;
+	int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt;
 	long inicio, backup;
 	size_t cantDePalabras;
 
-        //Leo linea por linea
-        while (fgetc(inputFile)!=EOF){
+	//Leo linea por linea
+	while (fgetc(inputFile)!=EOF){
 		//El primer fgetc solo es para ver si no llegue al final del archivo
 		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
 		fseek(inputFile,-1,SEEK_CUR);
@@ -145,15 +145,13 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (lineaConError==1){
-			//El error lo emito por salida estandar. Preguntar si esta bien que tambien figure en el archivo de salida
-			fprintf(outputFile, "Error fgetc: Linea con caracter invalido \n");
-			fprintf(stderr, "Error fgetc: Linea con caracter invalido \n");
+			fprintf(stderr, "Error: Linea con caracter invalido \n");
 			//return ERROR;
 			//Por ahora, ante un error el programa continua con las lineas siguiente. Preguntar si esta bien.
 		}
 		//Por ahora las lineas vacias (o solo con espacios en blanco) no las considero error,
 		//el programa continua normalmente, preguntar si esta bien
-        }
+	}
 
 
 
