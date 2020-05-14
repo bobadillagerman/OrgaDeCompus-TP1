@@ -8,6 +8,55 @@
 #define ERROR -1
 #define SALIDA_EXITOSA 0
 
+void merge(int* vector, int* left, int* right, size_t leftLen, size_t rightLen) {
+	int i = 0; int j = 0; int k = 0;
+	while (leftLen > i && rightLen > j) {
+		if (left[i] <= right[j]) {
+			vector[k] = left[i];
+			i++;
+		} else {
+			vector[k] = right[j];
+			j++;
+		}
+		k++;
+	}
+
+	while (i < leftLen) {
+		vector[k] = left[i];
+		i++;
+		k++;
+	}
+
+	while (j < rightLen) {
+		vector[k] = right[j];
+		j++;
+		k++;
+	}
+}
+
+void merge_sort (int* vector, size_t cantDePalabras) {
+	size_t middle;
+	if (cantDePalabras > 1) {
+		middle = cantDePalabras/2;
+		int* left  = (int*) malloc(middle*sizeof(int));
+		int* right = (int*) malloc((cantDePalabras-middle)*sizeof(int));
+
+		for (int i=0; i<middle; i++) {
+			left[i] = vector[i];
+		}
+
+		for (int j=middle; j<cantDePalabras; j++) {
+			right[j-middle]=vector[j];
+		}
+
+		merge_sort(left,middle);
+		merge_sort(right,(cantDePalabras - middle));
+		merge(vector, left, right, middle, (cantDePalabras-middle));
+		free(left);
+		free(right);
+	}
+}
+
 int main(int argc, char *argv[]) {
 	int option = 0;
 	const char *short_opt = "i:o:hV";
@@ -134,7 +183,7 @@ int main(int argc, char *argv[]) {
 				vector[i] = numero;
  			}
 
-			//merge_sort(vector, cantDePalabras);
+			merge_sort(vector, cantDePalabras);
 
 			//Imprimir vector
 			for (int i=0;i<cantDePalabras;i++)
