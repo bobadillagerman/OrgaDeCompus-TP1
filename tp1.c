@@ -195,11 +195,11 @@ int main(int argc, char *argv[]) {
 
 		if (lineaConError==1){
 			fprintf(stderr, "Error: Linea con caracter invalido \n");
-			//return ERROR;
-			//Por ahora, ante un error el programa continua con las lineas siguiente. Preguntar si esta bien.
+			return ERROR;
 		}
-		//Por ahora las lineas vacias (o solo con espacios en blanco) no las considero error,
-		//el programa continua normalmente, preguntar si esta bien
+		if (cantDePalabras==0){
+			fprintf(outputFile, "\n");
+		}
 	}
 
 
