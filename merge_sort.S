@@ -21,7 +21,7 @@ merge_sort:
 
         #salvo calle-saved regs en SRA
         sw fp, 36(sp)
-        #sw ra, 40(sp)
+        sw ra, 40(sp)
         move fp, sp
 
         #salvo argumentos
@@ -173,10 +173,13 @@ _end:
         la t9, myfree
         jal ra, t9
         #free right
+        lw a0, 16(fp)
+        la t9, myfree
+        jal ra, t9
         #restauro calle-saved regs
-        lw gp, 32(fp)
-        lw fp, 36(fp)
-        #lw ra, 40(fp)
+        lw gp, 32(sp)
+        lw fp, 36(sp)
+        lw ra, 40(fp)
         #destruyo stack frame
         addu sp, sp, 48
         jr ra
