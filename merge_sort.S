@@ -11,27 +11,27 @@ merge_sort:
         #info para debugger
         .frame fp, 48, ra
 
-        .set noreorder
-        .cpload t9
-        .set reorder
+        .set noreorder    
+        .cpload t9            
+        .set reorder 
 
         #creo stack frame - 4(SRA) + 4(LTA) + 4(ABA)
         subu sp, sp, 48
         .cprestore 32
 
         #salvo calle-saved regs en SRA
-        sw ra, 40(sp)
         sw fp, 36(sp)
+        sw ra, 40(sp)
         move fp, sp
 
-        #salgo argumentos
+        #salvo argumentos
         sw a0, 48(fp)
         sw a1, 52(fp)
 
         ####comienza funcion####
         li t1, 1
-        lw t0, 52(fp)   # len -> t0
-        bleu t0, t1, _end       # if len <= 1 salgo de la funcion (ya esta ordenado)
+        lw t0, 52(fp)                   # len -> t0
+        bleu t0, t1, _end               # if len <= 1 salgo de la funcion (ya esta ordenado)
         li t1, 2
         divu t1, t0, t1                 # middle=len/2 -> t1
         sw t1, 24(fp)                   # guardo middle en el stack frame
@@ -171,11 +171,12 @@ _end:
         #free left
         #free right
         #restauro calle-saved regs
-        lw fp, 16(fp)
-        lw ra, 40(fp)
         lw gp, 32(fp)
+        lw fp, 36(fp)
+        lw ra, 40(fp)
         #destruyo stack frame
         addu sp, sp, 48
         jr ra
 
 .end merge_sort
+.size merge_sort,.-merge_sort
