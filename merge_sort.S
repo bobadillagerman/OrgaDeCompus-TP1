@@ -59,10 +59,10 @@ for_1:
         lw t1, 24(fp)                   # middle -> t1
         bleu t1, t0, exit_for_1         # if middle <= i salir del for
         sll t2, t0, 2                   # escalo ix4 porque es un arreglo de enteros
-        la t3, 48(fp)                   # direccion(vector) -> t3
+        lw t3, 48(fp)                   # direccion(vector) -> t3
         addu t3, t3, t2                 # direccion(vector) + 4xi -> t3
         lw t3, 0(t3)                    # vector[i] -> t3
-        la t4, 20(fp)                   # direccion(left) -> t4
+        lw t4, 20(fp)                   # direccion(left) -> t4
         addu t4, t4, t2                 # direccion(left) + 4xi -> t4
         sw t3, 0(t4)                    # left[i] = vector[i]
         addiu t0, t0, 1                 # i++
@@ -73,15 +73,16 @@ for_2:
         lw t1, 52(fp)                   # len -> t2
         bleu t1, t0, exit_for_2         # if len <= j salir del for
         sll t2, t0, 2                   # escalo jx4 porque es un arreglo de enteros
-        la t3, 48(fp)                   # direccion(vector) -> t3
-        addu t3, t3, t2                 # direccion(vector) + 4xi -> t3
-        lw t3, 0(t3)                    # vector[i] -> t3
+        lw t3, 48(fp)                   # direccion(vector) -> t3
+        addu t3, t3, t2                 # direccion(vector) + 4xj -> t3
+        lw t3, 0(t3)                    # vector[j] -> t3
         lw t2, 24(fp)                   # middle -> t2
         subu t2, t0, t2                 # j-middle -> t2
         sll t2, t2, 2                   # escalo (j-middle)x4
-        la t4, 16(fp)                   # direccion(right) -> t4
+        lw t4, 16(fp)                   # direccion(right) -> t4
         addu t4, t4, t2                 # direccion(right) + (j-middle)x4 -> t4
         sw t3, 0(t4)                    # right[j-middle] = vector[j]
+        addiu t0, t0, 1                 # j++
         b for_2
 exit_for_2:
         #primera llamada recursiva
@@ -106,23 +107,22 @@ merge:
         subu t4, t4, t3                 # rightLen = (len-middle) -> t4
 while_1:
         bleu t3, t0, while_2            # if leftLen <= i salir o 
-        bleu t4, t0, while_2            # if rightLen <= j salir
+        bleu t4, t1, while_2            # if rightLen <= j salir
         #busco left[i] 
         sll t5, t0, 2                   # escalo ix4 porque es un arreglo de enteros
-        la t6, 20(fp)                   # direccion(left) -> t6
+        lw t6, 20(fp)                   # direccion(left) -> t6
         addu t6, t6, t5                 # direccion(left) + 4xi -> t6
         lw t5, 0(t6)                    # left[i] -> t5
         sw t5, 28(fp)                   # guardo left[i] en pos libre (28(fp)) de LTA para que alcancen las variables temporales
         #busco right[j]
         sll t5, t1, 2                   # escalo jx4 porque es un arreglo de enteros
-        la t6, 16(fp)                   # direccion(right) -> t6
+        lw t6, 16(fp)                   # direccion(right) -> t6
         addu t6, t6, t5                 # direccion(right) + 4xj -> t6
         lw t5, 0(t6)                    # right[j] -> t5
         #busco direccion de vector[k]
         sll t6, t2, 2                   # escalo kx4
-        la t7, 48(fp)                   # direccion(vector) -> t7
-        addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
-        lw t6, 0(t7)                    # vector[k] -> t6
+        lw t7, 48(fp)                   # direccion(vector) -> t7
+        addu t6, t7, t6                 # direccion(vector) + 4xk -> t7
         #comparo left[i] con right[j]
         lw t7, 28(fp)                   # left[i] -> t7
         bgtu t7, t5, _else              # if left[i] > right[j] => ir a bloque else
@@ -139,35 +139,33 @@ while_2:
         bleu t3, t0, while_3            # if leftLen <= i salir
         #busco left[i] 
         sll t5, t0, 2                   # escalo ix4 porque es un arreglo de enteros
-        la t6, 20(fp)                   # direccion(left) -> t6
+        lw t6, 20(fp)                   # direccion(left) -> t6
         addu t6, t6, t5                 # direccion(left) + 4xi -> t6
         lw t5, 0(t6)                    # left[i] -> t5
         #busco direccion de vector[k]
         sll t6, t2, 2                   # escalo kx4
-        la t7, 48(fp)                   # direccion(vector) -> t7
+        lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
-        lw t6, 0(t7)                    # vector[k] -> t6
-        sw t5, 0(t6)                    # vector[k] = left[i]
+        sw t5, 0(t7)                    # vector[k] = left[i]
         addiu t0, t0, 1                 # i++
         addiu t2, t2, 1                 # k++
         b while_2
 while_3:
-        bleu t4, t1, end                # if rightLen <= j salir
+        bleu t4, t1, _out                # if rightLen <= j salir
         #busco right[j] 
         sll t5, t1, 2                   # escalo jx4 porque es un arreglo de enteros
-        la t6, 16(fp)                   # direccion(right) -> t6
+        lw t6, 16(fp)                   # direccion(right) -> t6
         addu t6, t6, t5                 # direccion(right) + 4xj -> t6
         lw t5, 0(t6)                    # right[j] -> t5
         #busco direccion de vector[k]
         sll t6, t2, 2                   # escalo kx4
-        la t7, 48(fp)                   # direccion(vector) -> t7
+        lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
-        lw t6, 0(t7)                    # vector[k] -> t6
-        sw t5, 0(t6)                    # vector[k] = right[j]
+        sw t5, 0(t7)                    # vector[k] = right[j]
         addiu t1, t1, 1                 # j++
         addiu t2, t2, 1                 # k++
         b while_3
-_end:
+_out:
         #free left
         lw a0, 20(fp)
         la t9, myfree
@@ -176,10 +174,11 @@ _end:
         lw a0, 16(fp)
         la t9, myfree
         jal ra, t9
+_end:        
         #restauro calle-saved regs
         lw gp, 32(sp)
         lw fp, 36(sp)
-        lw ra, 40(fp)
+        lw ra, 40(sp)
         #destruyo stack frame
         addu sp, sp, 48
         jr ra
