@@ -39,6 +39,7 @@ merge_sort:
         #reservo espacio para vector left
         li t0, 4                        # 4 -> t0 (cargo sizeof(int))
         mul a0, t0, t1                  # para left necesito middle xsizeof(int)), es decir middle x4bytes
+#	sll a0, t1, 2
         la t9, mymalloc
         jal ra, t9
         sw v0, 20(fp)                   # guardo puntero a vector left
@@ -60,11 +61,11 @@ for_1:
         bleu t1, t0, exit_for_1         # if middle <= i salir del for
         sll t2, t0, 2                   # escalo ix4 porque es un arreglo de enteros
         lw t3, 48(fp)                   # direccion(vector) -> t3
-        addu t3, t3, t2                 # direccion(vector) + 4xi -> t3
+        add t3, t3, t2                  # direccion(vector) + 4xi -> t3
         lw t3, 0(t3)                    # vector[i] -> t3
         lw t4, 20(fp)                   # direccion(left) -> t4
-        addu t4, t4, t2                 # direccion(left) + 4xi -> t4
-        sw t3, 0(t4)                    # left[i] = vector[i]
+        addu t4, t4, t2                 # direccion(left) + 4xi -> t4	
+	sw t3, 0(t4)                    # left[i] = vector[i]
         addiu t0, t0, 1                 # i++
         b for_1
 exit_for_1:
@@ -82,7 +83,7 @@ for_2:
         lw t4, 16(fp)                   # direccion(right) -> t4
         addu t4, t4, t2                 # direccion(right) + (j-middle)x4 -> t4
         sw t3, 0(t4)                    # right[j-middle] = vector[j]
-        addiu t0, t0, 1                 # j++
+	addu t0, t0, 1			# j++ 	
         b for_2
 exit_for_2:
         #primera llamada recursiva
@@ -123,6 +124,7 @@ while_1:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t6, t7, t6                 # direccion(vector) + 4xk -> t7
+#        lw t6, 0(t7)                    # vector[k] -> t6
         #comparo left[i] con right[j]
         lw t7, 28(fp)                   # left[i] -> t7
         bgtu t7, t5, _else              # if left[i] > right[j] => ir a bloque else
@@ -146,12 +148,13 @@ while_2:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
+#        lw t6, 0(t7)                    # vector[k] -> t6
         sw t5, 0(t7)                    # vector[k] = left[i]
         addiu t0, t0, 1                 # i++
         addiu t2, t2, 1                 # k++
         b while_2
 while_3:
-        bleu t4, t1, _out                # if rightLen <= j salir
+        bleu t4, t1, _out               # if rightLen <= j salir
         #busco right[j] 
         sll t5, t1, 2                   # escalo jx4 porque es un arreglo de enteros
         lw t6, 16(fp)                   # direccion(right) -> t6
@@ -161,21 +164,22 @@ while_3:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
+#        lw t6, 0(t7)                    # vector[k] -> t6
         sw t5, 0(t7)                    # vector[k] = right[j]
         addiu t1, t1, 1                 # j++
         addiu t2, t2, 1                 # k++
         b while_3
 _out:
         #free left
-        lw a0, 20(fp)
-        la t9, myfree
-        jal ra, t9
+	lw a0, 20(fp)
+	la t9, myfree
+	jal ra, t9
         #free right
         lw a0, 16(fp)
-        la t9, myfree
-        jal ra, t9
-_end:        
-        #restauro calle-saved regs
+	la t9, myfree
+	jal ra, t9
+_end:
+	#restauro calle-saved regs
         lw gp, 32(sp)
         lw fp, 36(sp)
         lw ra, 40(sp)
