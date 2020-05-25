@@ -113,7 +113,7 @@ int main(int argc, char *argv[]) {
 
  		while((caracter=fgetc(inputFile))!='\n' && caracter!=EOF){
 			//Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57), los espacios y los signos + y - en cierto orden
-			if (!(caracter>47 && caracter<58) && caracter!=' ' && !((caracter=='+' || caracter=='-') && caracterAnterior==' ') || (caracter==' ' && (caracterAnterior=='+' || caracterAnterior=='-') && caracterAntAnt==' '))
+			if ((!(caracter>47 && caracter<58) && caracter!=' ' && !((caracter=='+' || caracter=='-') && caracterAnterior==' ')) || (caracter==' ' && (caracterAnterior=='+' || caracterAnterior=='-') && caracterAntAnt==' '))
 				lineaConError=1;
 
 			if ((caracterAnterior==' ') && (caracter!=' '))
