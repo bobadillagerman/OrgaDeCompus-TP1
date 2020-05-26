@@ -39,7 +39,6 @@ merge_sort:
         #reservo espacio para vector left
         li t0, 4                        # 4 -> t0 (cargo sizeof(int))
         mul a0, t0, t1                  # para left necesito middle xsizeof(int)), es decir middle x4bytes
-#	sll a0, t1, 2
         la t9, mymalloc
         jal ra, t9
         sw v0, 20(fp)                   # guardo puntero a vector left
@@ -124,10 +123,9 @@ while_1:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t6, t7, t6                 # direccion(vector) + 4xk -> t7
-#        lw t6, 0(t7)                    # vector[k] -> t6
         #comparo left[i] con right[j]
         lw t7, 28(fp)                   # left[i] -> t7
-        bgtu t7, t5, _else              # if left[i] > right[j] => ir a bloque else
+        bgt t7, t5, _else               # if left[i] > right[j] => ir a bloque else
         sw t7, 0(t6)                    # vector[k] = left[i]
         addiu t0, t0, 1                 # i++
         addiu t2, t2, 1                 # k++
@@ -148,7 +146,6 @@ while_2:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
-#        lw t6, 0(t7)                    # vector[k] -> t6
         sw t5, 0(t7)                    # vector[k] = left[i]
         addiu t0, t0, 1                 # i++
         addiu t2, t2, 1                 # k++
@@ -164,7 +161,6 @@ while_3:
         sll t6, t2, 2                   # escalo kx4
         lw t7, 48(fp)                   # direccion(vector) -> t7
         addu t7, t7, t6                 # direccion(vector) + 4xk -> t7
-#        lw t6, 0(t7)                    # vector[k] -> t6
         sw t5, 0(t7)                    # vector[k] = right[j]
         addiu t1, t1, 1                 # j++
         addiu t2, t2, 1                 # k++
