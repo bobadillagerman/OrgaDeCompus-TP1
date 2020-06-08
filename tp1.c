@@ -99,6 +99,12 @@ int main(int argc, char *argv[]) {
 	while (fgetc(inputFile)!=EOF){
 		//El primer fgetc solo es para ver si no llegue al final del archivo
 		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
+		
+		/*if(fseek(inputFile,-1,SEEK_CUR) != 0){
+			fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
+			return ERROR;
+		  }	
+		*/
 		fseek(inputFile,-1,SEEK_CUR);
 
 		//Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
@@ -131,6 +137,11 @@ int main(int argc, char *argv[]) {
 			backup=ftell(inputFile);
 			fseek(inputFile,inicio,SEEK_SET);
 			int* vector = (int*) malloc(cantDePalabras*sizeof(int));
+			/*if(vector == NULL){
+				fprintf(stderr, "Error: Asignacion fallida de tamaño para el vector. \n");
+				return ERROR;
+			  }
+			*/
 			for (int i=0;i<cantDePalabras;i++){
 				fscanf(inputFile,"%d",&numero);
 				vector[i] = numero;
@@ -155,7 +166,12 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-
+	/* Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
+	  if(ferror(inputFile)){
+	  	fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
+		return ERROR;
+	  }
+	*/
 
 
 
