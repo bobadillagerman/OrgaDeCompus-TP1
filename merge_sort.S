@@ -1,4 +1,5 @@
 #include <sys/regdef.h>
+#include <sys/syscall.h>
 
 .text
 .abicalls
@@ -41,7 +42,14 @@ merge_sort:
         mul a0, t0, t1                  # para left necesito middle xsizeof(int)), es decir middle x4bytes
         la t9, mymalloc
         jal ra, t9
-        sw v0, 20(fp)                   # guardo puntero a vector left
+	syscall
+	
+	bnez v0, no_falla_left		#si mymalloc no devuelve NULL, entonces sigue
+	li v0, -1
+	j _end				#se encontro una falla en mymalloc, devuelve -1 y termina el programa
+	
+no_falla_left:        
+	sw v0, 20(fp)                   # guardo puntero a vector left
 
         #reservo espacio para vector right
         lw t1, 24(fp)                   # middle -> t1
@@ -51,6 +59,13 @@ merge_sort:
         mul a0, t0, t1                  # necesito (len-middle)xsizeof(int) bytes
         la t9, mymalloc
         jal ra, t9
+	syscall
+	
+	bnez v0, no_falla_right		#si mymalloc no devuelve NULL, entonces sigue
+	li v0, -1
+	j _end				#se encontro falla en mymalloc, devuelve -1 y termina el programa
+	
+no_falla_right:	
         sw v0, 16(fp)                   # guardo puntero a vector right
 
         #primer ciclo For
