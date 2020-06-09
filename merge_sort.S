@@ -1,6 +1,12 @@
 #include <sys/regdef.h>
 #include <sys/syscall.h>
 
+.rdata
+falla_mymalloc_left:
+	.asciiz "Ha habido una falla de pedido de memoria para vector left\n"
+falla_mymalloc_right:
+	.asciiz "Ha habido una falla de pedido de memoria para vector right\n"
+
 .text
 .abicalls
 
@@ -42,9 +48,11 @@ merge_sort:
         mul a0, t0, t1                  # para left necesito middle xsizeof(int)), es decir middle x4bytes
         la t9, mymalloc
         jal ra, t9
-	syscall
 	
 	bnez v0, no_falla_left		#si mymalloc no devuelve NULL, entonces sigue
+	li v0, 4			#codigo para imprimir en consola
+	la a0, falla_mymalloc_left	#se guarda la direccion del string a imprimir
+	syscall				#salida por consola de error
 	li v0, -1
 	j _end				#se encontro una falla en mymalloc, devuelve -1 y termina el programa
 	
@@ -59,9 +67,11 @@ no_falla_left:
         mul a0, t0, t1                  # necesito (len-middle)xsizeof(int) bytes
         la t9, mymalloc
         jal ra, t9
-	syscall
 	
 	bnez v0, no_falla_right		#si mymalloc no devuelve NULL, entonces sigue
+	li v0, 4			#codigo para imprimir en consola
+	la a0, falla_mymalloc_right	#se guarda la direccion del string a imprimir
+	syscall				#salida por consola de error
 	li v0, -1
 	j _end				#se encontro falla en mymalloc, devuelve -1 y termina el programa
 	
