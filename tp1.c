@@ -87,6 +87,11 @@ int main(int argc, char *argv[]) {
 	while ((data=fgetc(inputFileOriginal)) != EOF ) {
 		fputc(data,inputFile );
 	}
+	//Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
+	if(ferror(inputFile)){
+		fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
+		return ERROR;
+	}
 	rewind(inputFile);
 
 	
@@ -99,13 +104,10 @@ int main(int argc, char *argv[]) {
 	while (fgetc(inputFile)!=EOF){
 		//El primer fgetc solo es para ver si no llegue al final del archivo
 		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
-		
-		/*if(fseek(inputFile,-1,SEEK_CUR) != 0){
+		if(fseek(inputFile,-1,SEEK_CUR) != 0){
 			fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
 			return ERROR;
-		  }	
-		*/
-		fseek(inputFile,-1,SEEK_CUR);
+		}	
 
 		//Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
 		//La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
@@ -128,6 +130,11 @@ int main(int argc, char *argv[]) {
 			caracterAntAnt = caracterAnterior;
 			caracterAnterior = caracter;
 		}
+		//Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
+		if(ferror(inputFile)){
+			fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
+			return ERROR;
+		}
 
 		//Un caso extra que no pude considerar en el while (cuando el ultimo caracter de la linea es un signo)
 		if (caracterAnterior=='+' || caracterAnterior=='-')
@@ -135,13 +142,16 @@ int main(int argc, char *argv[]) {
 
 		if ((lineaConError==0) && (cantDePalabras>0)){
 			backup=ftell(inputFile);
-			fseek(inputFile,inicio,SEEK_SET);
+			if(fseek(inputFile,inicio,SEEK_SET) != 0){
+				fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
+				return ERROR;
+			}
 			int* vector = (int*) malloc(cantDePalabras*sizeof(int));
-			/*if(vector == NULL){
+			if(vector == NULL){
 				fprintf(stderr, "Error: Asignacion fallida de tamaño para el vector. \n");
 				return ERROR;
-			  }
-			*/
+			}
+			
 			for (int i=0;i<cantDePalabras;i++){
 				fscanf(inputFile,"%d",&numero);
 				vector[i] = numero;
@@ -154,7 +164,10 @@ int main(int argc, char *argv[]) {
 				fprintf(outputFile, "%d ", vector[i]);
 			fprintf(outputFile, "\n");
 			free(vector);
-			fseek(inputFile,backup,SEEK_SET);
+			if(fseek(inputFile,backup,SEEK_SET) != 0){
+				fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
+				return ERROR;
+			}
 		}
 
 		if (lineaConError==1){
@@ -166,14 +179,11 @@ int main(int argc, char *argv[]) {
 		}
 	}
 
-	/* Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
-	  if(ferror(inputFile)){
-	  	fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
+	//Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
+	if(ferror(inputFile)){
+		fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
 		return ERROR;
-	  }
-	*/
-
-
+	}
 
 	if(fclose(inputFile)==EOF){
 		fprintf(stderr, "Error fclose: %s\n", strerror( errno ));
