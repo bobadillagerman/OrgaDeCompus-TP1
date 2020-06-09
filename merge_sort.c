@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "merge_sort.h"
 #include "mymalloc.h"
 
@@ -7,7 +8,15 @@ void merge_sort (int* vector, size_t cantDePalabras) {
 	if (cantDePalabras > 1) {
 		middle = cantDePalabras/2;
 		int* left  = (int*) malloc(middle*sizeof(int));
+		if(left == NULL){
+			fprintf(stderr, "Error: Asignacion fallida de tamaño para el vector. \n");
+			exit(-1);
+		}
 		int* right = (int*) malloc((cantDePalabras-middle)*sizeof(int));
+		if(right == NULL){
+			fprintf(stderr, "Error: Asignacion fallida de tamaño para el vector. \n");
+			exit(-1);
+		}
 
 		for (int i=0; i<middle; i++) {
 			left[i] = vector[i];
