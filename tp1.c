@@ -81,46 +81,62 @@ int main(int argc, char *argv[]) {
 	if(outputFile == NULL) {
 		outputFile = stdout;
 	}
-
-	//Corregido bug de entrada estandar por tuberia
-	int data;
-	while ((data=fgetc(inputFileOriginal)) != EOF ) {
-		fputc(data,inputFile );
-	}
-	//Salta error si hubo algun incoveniente al leer el caracter en algun momento dado
-	if(ferror(inputFile)){
-		fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
-		return ERROR;
-	}
-	rewind(inputFile);
-
 	
 
-	int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt;
+	int caracterAnterior, caracter, numero, lineaConError, caracterAntAnt, primerLineaNoVacia;
 	long inicio, backup;
 	size_t cantDePalabras;
 
 	//Leo linea por linea
-	while (fgetc(inputFile)!=EOF){
+	while ((caracter=fgetc(inputFileOriginal))!=EOF){
+		if (fputc(caracter,inputFile) == EOF){
+			fprintf(stderr, "Error fputc: %s\n", strerror( errno ));
+			return ERROR;
+		}
 		//El primer fgetc solo es para ver si no llegue al final del archivo
 		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
 		if(fseek(inputFile,-1,SEEK_CUR) != 0){
 			fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
 			return ERROR;
 		}	
-
 		//Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
 		//La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
 		//La 2da vez va a ser para guardar los datos en el vector de enteros
 		inicio=ftell(inputFile);
+		if(inicio < 0){
+			fprintf(stderr, "Error ftell: %s\n", strerror( errno ));
+			return ERROR;
+		}
+		fgetc(inputFile);
 
 		lineaConError=0;
  		cantDePalabras = 0;
 		caracterAnterior = ' ';
 		caracterAntAnt = ' ';
+		primerLineaNoVacia = 0;
+		
+		if (caracter!='\n' && caracter!=EOF){
+			//Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57),
+			//los espacios, y los signos + y - en cierto orden			
+			if ((!(caracter>47 && caracter<58) && caracter!=' ' && !((caracter=='+' || caracter=='-') && caracterAnterior==' ')) || (caracter==' ' && (caracterAnterior=='+' || caracterAnterior=='-') && caracterAntAnt==' '))
+				lineaConError=1;
 
- 		while((caracter=fgetc(inputFile))!='\n' && caracter!=EOF){
-			//Los caracteres validos son los numeros del 0 al 9 (en ascci van del 48 al 57), los espacios y los signos + y - en cierto orden
+			if ((caracterAnterior==' ') && (caracter!=' '))
+				cantDePalabras++;
+
+			caracterAntAnt = caracterAnterior;
+			caracterAnterior = caracter;
+			primerLineaNoVacia = 1;
+		}
+		if (primerLineaNoVacia==0)
+			fprintf(outputFile, "\n");
+
+		//Repito para el resto de caracteres de la misma linea
+ 		while((caracter=fgetc(inputFileOriginal))!='\n' && caracter!=EOF){
+			if (fputc(caracter,inputFile) == EOF){
+				fprintf(stderr, "Error fputc: %s\n", strerror( errno ));
+				return ERROR;
+			}
 			if ((!(caracter>47 && caracter<58) && caracter!=' ' && !((caracter=='+' || caracter=='-') && caracterAnterior==' ')) || (caracter==' ' && (caracterAnterior=='+' || caracterAnterior=='-') && caracterAntAnt==' '))
 				lineaConError=1;
 
@@ -135,6 +151,10 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Error fgetc: %s\n", strerror( errno ));
 			return ERROR;
 		}
+		if (fputc(caracter,inputFile) == EOF){
+			fprintf(stderr, "Error fputc: %s\n", strerror( errno ));
+			return ERROR;
+		}
 
 		//Un caso extra que no pude considerar en el while (cuando el ultimo caracter de la linea es un signo)
 		if (caracterAnterior=='+' || caracterAnterior=='-')
@@ -142,6 +162,10 @@ int main(int argc, char *argv[]) {
 
 		if ((lineaConError==0) && (cantDePalabras>0)){
 			backup=ftell(inputFile);
+			if(backup < 0){
+				fprintf(stderr, "Error ftell: %s\n", strerror( errno ));
+				return ERROR;
+			}
 			if(fseek(inputFile,inicio,SEEK_SET) != 0){
 				fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
 				return ERROR;
@@ -153,7 +177,10 @@ int main(int argc, char *argv[]) {
 			}
 			
 			for (int i=0;i<cantDePalabras;i++){
-				fscanf(inputFile,"%d",&numero);
+				if(fscanf(inputFile,"%d",&numero) == EOF){
+					fprintf(stderr, "Error fscanf: %s\n", strerror( errno ));
+					return ERROR;
+				}
 				vector[i] = numero;
  			}
 
@@ -174,7 +201,7 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Error: Linea con caracter invalido \n");
 			return ERROR;
 		}
-		if (cantDePalabras==0){
+		if (cantDePalabras==0 && caracter!=EOF){
 			fprintf(outputFile, "\n");
 		}
 	}
