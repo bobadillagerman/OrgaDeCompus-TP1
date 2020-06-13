@@ -89,16 +89,8 @@ int main(int argc, char *argv[]) {
 
 	//Leo linea por linea
 	while ((caracter=fgetc(inputFileOriginal))!=EOF){
-		if (fputc(caracter,inputFile) == EOF){
-			fprintf(stderr, "Error fputc: %s\n", strerror( errno ));
-			return ERROR;
-		}
 		//El primer fgetc solo es para ver si no llegue al final del archivo
-		//fseek retrocede el puntero un lugar para volver a dejarlo en el primer lugar
-		if(fseek(inputFile,-1,SEEK_CUR) != 0){
-			fprintf(stderr, "Error: Desplazamiento invalido en el archivo de texto. \n");
-			return ERROR;
-		}	
+
 		//Con ftell guardo el puntero al inicio de la linea porque voy a recorrer la linea dos veces
 		//La 1ra vez la recorro para contar la cantidad de palabras y chequear que los caracteres son validos
 		//La 2da vez va a ser para guardar los datos en el vector de enteros
@@ -107,8 +99,11 @@ int main(int argc, char *argv[]) {
 			fprintf(stderr, "Error ftell: %s\n", strerror( errno ));
 			return ERROR;
 		}
-		fgetc(inputFile);
-
+		if (fputc(caracter,inputFile) == EOF){
+			fprintf(stderr, "Error fputc: %s\n", strerror( errno ));
+			return ERROR;
+		}
+		
 		lineaConError=0;
  		cantDePalabras = 0;
 		caracterAnterior = ' ';
