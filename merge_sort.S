@@ -1,4 +1,9 @@
 #include <sys/regdef.h>
+#include <sys/syscall.h>
+
+.data
+        error_msg: .asciz "Error mymalloc\n" 
+        error_length: .word 15
 
 .text
 .abicalls
@@ -41,6 +46,7 @@ merge_sort:
         mul a0, t0, t1                  # para left necesito middle xsizeof(int)), es decir middle x4bytes
         la t9, mymalloc
         jal ra, t9
+        beqz  v0, error_mymalloc        # si falla mymalloc retorno con error
         sw v0, 20(fp)                   # guardo puntero a vector left
 
         #reservo espacio para vector right
@@ -51,6 +57,7 @@ merge_sort:
         mul a0, t0, t1                  # necesito (len-middle)xsizeof(int) bytes
         la t9, mymalloc
         jal ra, t9
+        beqz  v0, error_mymalloc        # si falla mymalloc retorno con error
         sw v0, 16(fp)                   # guardo puntero a vector right
 
         #primer ciclo For
@@ -64,7 +71,7 @@ for_1:
         lw t3, 0(t3)                    # vector[i] -> t3
         lw t4, 20(fp)                   # direccion(left) -> t4
         addu t4, t4, t2                 # direccion(left) + 4xi -> t4	
-	sw t3, 0(t4)                    # left[i] = vector[i]
+	sw t3, 0(t4)                        # left[i] = vector[i]
         addiu t0, t0, 1                 # i++
         b for_1
 exit_for_1:
@@ -82,7 +89,7 @@ for_2:
         lw t4, 16(fp)                   # direccion(right) -> t4
         addu t4, t4, t2                 # direccion(right) + (j-middle)x4 -> t4
         sw t3, 0(t4)                    # right[j-middle] = vector[j]
-	addu t0, t0, 1			# j++ 	
+	addu t0, t0, 1			            # j++ 	
         b for_2
 exit_for_2:
         #primera llamada recursiva
@@ -182,6 +189,15 @@ _end:
         #destruyo stack frame
         addu sp, sp, 48
         jr ra
+error_mymalloc:
+        li  a0, 2                       # para que vaya por stderr                      
+        la  a1, error_msg               
+        lw  a2, error_length            
+        li  v0, SYS_write               # indicamos que tiene que imprimir
+        syscall                         # imprime mensaje por stderr
+        li  v0, SYS_exit                # para que salga de la funcion
+        li  a0, 1                       # valor de retorno 1
+        syscall
 
 .end merge_sort
 .size merge_sort,.-merge_sort
